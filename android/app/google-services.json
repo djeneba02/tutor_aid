@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "614179652274",
+    "project_id": "tutor-aid-14664",
+    "storage_bucket": "tutor-aid-14664.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:614179652274:android:40167f2e6ff4a97b08ffab",
+        "android_client_info": {
+          "package_name": "com.koumba.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBV-rBY2Lj3mDq0Spa-r0gcNE6sP3ZLTts"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
