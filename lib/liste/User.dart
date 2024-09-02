@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:tutor_aid/pages/UserEdit.page.dart';
 
 class UserPage extends StatefulWidget {
   const UserPage({Key? key}) : super(key: key);
@@ -24,9 +25,16 @@ class _UserPageState extends State<UserPage> {
   }
 
   // Fonction pour modifier un utilisateur
-  void _editUser(String userId) {
-    // Implémentez la navigation vers la page de modification ou afficher une boîte de dialogue
-  }
+ void _editUser(String userId) async {
+  DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+  Map<String, dynamic> userData = userDoc.data()! as Map<String, dynamic>;
+
+  Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (context) => UserEditPage(userId: userId, userData: userData),
+    ),
+  );
+}
 
 
   @override

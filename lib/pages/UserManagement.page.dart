@@ -11,7 +11,9 @@ class _UserManagementPageState extends State<UserManagementPage> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _roleController = TextEditingController();
+  String? _selectedRole; // Variable pour stocker le rôle sélectionné
+
+  final List<String> _roles = ['ADMIN', 'FORMATEUR', 'APPRENANT']; // Liste des rôles disponibles
   final UserService _userService = UserService();
 
   void _addUser() async {
@@ -19,7 +21,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
     if (_nameController.text.isEmpty ||
         _emailController.text.isEmpty ||
         _passwordController.text.isEmpty ||
-        _roleController.text.isEmpty) {
+        _selectedRole == null) {
       _showDialog('Error', 'Please fill all fields');
       return;
     }
@@ -29,11 +31,11 @@ class _UserManagementPageState extends State<UserManagementPage> {
         name: _nameController.text,
         email: _emailController.text,
         password: _passwordController.text,
-        role: _roleController.text,
+        role: _selectedRole!, // Utiliser le rôle sélectionné
       );
 
       if (user != null) {
-        _showDialog('Success', 'Utilisateur ajouter');
+        _showDialog('Success', 'Utilisateur ajouté');
         _clearFields();
       } else {
         _showDialog('Error', 'Failed to add user');
@@ -70,7 +72,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
     _nameController.clear();
     _emailController.clear();
     _passwordController.clear();
-    _roleController.clear();
+    _selectedRole = null;
   }
 
   @override
@@ -95,9 +97,23 @@ class _UserManagementPageState extends State<UserManagementPage> {
               decoration: InputDecoration(labelText: 'Password'),
               obscureText: true,
             ),
-            TextField(
-              controller: _roleController,
-              decoration: InputDecoration(labelText: 'Role'),
+            DropdownButtonFormField<String>(
+              value: _selectedRole,
+              hint: Text('Select Role'),
+              items: _roles.map((String role) {
+                return DropdownMenuItem<String>(
+                  value: role,
+                  child: Text(role),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedRole = newValue;
+                });
+              },
+              decoration: InputDecoration(
+                labelText: 'Role',
+              ),
             ),
             SizedBox(height: 20),
             ElevatedButton(
