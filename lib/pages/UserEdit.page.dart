@@ -15,94 +15,95 @@ class UserEditPage extends StatefulWidget {
 class _UserEditPageState extends State<UserEditPage> {
   late TextEditingController _displayNameController;
   late TextEditingController _emailController;
-  late TextEditingController _roleController;
   late TextEditingController _oldPasswordController;
   late TextEditingController _newPasswordController;
   late TextEditingController _confirmPasswordController;
+  String? _selectedRole;
+
+  final List<String> _roles = ['ADMIN', 'FORMATEUR', 'APPRENANT'];
 
   @override
   void initState() {
     super.initState();
     _displayNameController = TextEditingController(text: widget.userData['displayName']);
     _emailController = TextEditingController(text: widget.userData['email']);
-    _roleController = TextEditingController(text: widget.userData['role']);
     _oldPasswordController = TextEditingController();
     _newPasswordController = TextEditingController();
     _confirmPasswordController = TextEditingController();
+    _selectedRole = widget.userData['role'];
   }
 
   @override
   void dispose() {
     _displayNameController.dispose();
     _emailController.dispose();
-    _roleController.dispose();
     _oldPasswordController.dispose();
     _newPasswordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
   }
 
- Future<void> _updateUser() async {
-  if (_displayNameController.text.isEmpty ||
-      _emailController.text.isEmpty ||
-      _roleController.text.isEmpty ||
-      (_newPasswordController.text.isNotEmpty && _confirmPasswordController.text.isEmpty) ||
-      (_newPasswordController.text.isNotEmpty && _oldPasswordController.text.isEmpty)) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Tous les champs sont obligatoires.')),
-    );
-    return;
-  }
-
-  if (_newPasswordController.text.isNotEmpty && _newPasswordController.text != _confirmPasswordController.text) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Les mots de passe ne correspondent pas.')),
-    );
-    return;
-  }
-
-  try {
-    // Mise à jour des informations de l'utilisateur dans Firestore
-    await FirebaseFirestore.instance.collection('users').doc(widget.userId).update({
-      'displayName': _displayNameController.text,
-      'email': _emailController.text,
-      'role': _roleController.text,
-    });
-
-    // Mise à jour du mot de passe si un nouveau mot de passe est fourni
-    if (_newPasswordController.text.isNotEmpty) {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        // Vérification du mot de passe actuel
-        AuthCredential credential = EmailAuthProvider.credential(
-          email: user.email!,
-          password: _oldPasswordController.text,
-        );
-
-        try {
-          await user.reauthenticateWithCredential(credential);
-          await user.updatePassword(_newPasswordController.text);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Mot de passe mis à jour avec succès.')),
-          );
-        } catch (e) {
-          print('Failed to reauthenticate: $e');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Échec de la vérification de l\'ancien mot de passe : $e')),
-          );
-          return;
-        }
-      }
+  Future<void> _updateUser() async {
+    if (_displayNameController.text.isEmpty ||
+        _emailController.text.isEmpty ||
+        _selectedRole == null ||
+        (_newPasswordController.text.isNotEmpty && _confirmPasswordController.text.isEmpty) ||
+        (_newPasswordController.text.isNotEmpty && _oldPasswordController.text.isEmpty)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Tous les champs sont obligatoires.')),
+      );
+      return;
     }
 
-    Navigator.of(context).pop();
-  } catch (e) {
-    print('Failed to update user: $e');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Échec de la mise à jour : $e')),
-    );
+    if (_newPasswordController.text.isNotEmpty && _newPasswordController.text != _confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Les mots de passe ne correspondent pas.')),
+      );
+      return;
+    }
+
+    try {
+      // Mise à jour des informations de l'utilisateur dans Firestore
+      await FirebaseFirestore.instance.collection('users').doc(widget.userId).update({
+        'displayName': _displayNameController.text,
+        'email': _emailController.text,
+        'role': _selectedRole,
+      });
+
+      // Mise à jour du mot de passe si un nouveau mot de passe est fourni
+      if (_newPasswordController.text.isNotEmpty) {
+        User? user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          // Vérification du mot de passe actuel
+          AuthCredential credential = EmailAuthProvider.credential(
+            email: user.email!,
+            password: _oldPasswordController.text,
+          );
+
+          try {
+            await user.reauthenticateWithCredential(credential);
+            await user.updatePassword(_newPasswordController.text);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Mot de passe mis à jour avec succès.')),
+            );
+          } catch (e) {
+            print('Failed to reauthenticate: $e');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Échec de la vérification de l\'ancien mot de passe : $e')),
+            );
+            return;
+          }
+        }
+      }
+
+      Navigator.of(context).pop();
+    } catch (e) {
+      print('Failed to update user: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Échec de la mise à jour : $e')),
+      );
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -122,11 +123,26 @@ class _UserEditPageState extends State<UserEditPage> {
             TextField(
               controller: _emailController,
               decoration: const InputDecoration(labelText: 'Email'),
+              keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 16.0),
-            TextField(
-              controller: _roleController,
-              decoration: const InputDecoration(labelText: 'Rôle'),
+            DropdownButtonFormField<String>(
+              value: _selectedRole,
+              hint: Text('Sélectionnez un rôle'),
+              items: _roles.map((String role) {
+                return DropdownMenuItem<String>(
+                  value: role,
+                  child: Text(role),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedRole = newValue;
+                });
+              },
+              decoration: InputDecoration(
+                labelText: 'Rôle',
+              ),
             ),
             const SizedBox(height: 16.0),
             TextField(

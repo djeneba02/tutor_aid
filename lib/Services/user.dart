@@ -41,10 +41,10 @@ class UserService {
   }
 
   // Mettre à jour le rôle d'un utilisateur
-  Future<void> updateUserRole(String uid, String newRole) async {
+   Future<void> updateUserRole(String uid, String newRole) async {
     try {
       await _firestore.collection('users').doc(uid).update({
-        'role': newRole,  // Assurez-vous que ce champ correspond à ce que vous attendez dans UserModel
+        'role': newRole,
       });
     } catch (e) {
       print('Failed to update user role: $e');
