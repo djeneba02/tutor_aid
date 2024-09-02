@@ -2,6 +2,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart' ;
 import 'package:tutor_aid/liste/User.dart';
 import 'package:tutor_aid/pages/UserManagement.page.dart';
+import 'package:tutor_aid/pages/dashbord.page.dart';
+import 'package:tutor_aid/pages/profil.page.dart';
+import 'package:tutor_aid/pages/rapport.page.dart';
 import 'package:tutor_aid/pages/ticket.page.dart';
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +29,7 @@ class TutorAid extends StatelessWidget {
     return MaterialApp(
       // Utilisation de routes
       routes: {
-        '/': (context) => const AccueilPage(),
+          '/': (context) => const AccueilPage(),
         '/Formateur': (context) => const FormateurPage(),
         '/Cours': (context) => const CoursPage(),
         '/Historique': (context) => const HistoriquePage(),
@@ -34,6 +37,9 @@ class TutorAid extends StatelessWidget {
         '/Ticket': (context) =>  TicketPage(),
         '/UserManagement': (context) => UserManagementPage(),
         '/User': (context) => UserPage(),
+        '/Dashbord': (context) => DashbordPage(),
+        '/Profil': (context) => ProfilPage(),
+        '/Rapport': (context) => RapportPage(),
       },
     );
   }

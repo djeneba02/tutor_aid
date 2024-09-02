@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:tutor_aid/pages/AppBar.dart';
+import 'package:tutor_aid/pages/Sidebar.dart';
 
 class FormateurPage extends StatelessWidget {
   const FormateurPage({Key? key}) : super(key: key);
@@ -9,9 +11,8 @@ class FormateurPage extends StatelessWidget {
     Color peachPuff = const Color(0xFFFFEDE0);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Formateur"),
-      ),
+      appBar: CustomAppBar(title: 'Formateur'),
+      drawer: CustomDrawer(),
     );
   }
 }
