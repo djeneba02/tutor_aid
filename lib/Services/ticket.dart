@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:tutor_aid/model/detal.dart';
 import 'package:tutor_aid/model/ticket.dart';
 import 'ticket.dart';  // Assurez-vous que ce chemin est correct
@@ -8,13 +9,30 @@ class TicketService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   // Ajouter un ticket
-  Future<void> addTicket(Ticket ticket) async {
-    try {
-      await _db.collection('Tickets').add(ticket.toMap());
-    } catch (e) {
-      print('Erreur lors de l\'ajout du ticket: $e');
+  // Future<void> addTicket(Ticket ticket) async {
+  //   try {
+  //     await _db.collection('Tickets').add(ticket.toMap());
+  //   } catch (e) {
+  //     print('Erreur lors de l\'ajout du ticket: $e');
+  //   }
+  // }
+
+   Future<void> addTicket(String title, String description) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      throw Exception('Utilisateur non connecté');
     }
+
+    final userId = currentUser.uid;
+
+    await _db.collection('Tickets').add({
+      'title': title,
+      'description': description,
+      'createdBy': userId,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
   }
+
 
   // Lire tous les tickets
   Stream<List<Ticket>> getTickets() {

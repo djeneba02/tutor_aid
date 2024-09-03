@@ -15,7 +15,7 @@ class ViewReponsesPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Réponses du Ticket'),
-        backgroundColor: Colors.teal,
+       
         elevation: 4,
       ),
       body: Padding(
@@ -42,9 +42,9 @@ class ViewReponsesPage extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 16.0),
                   child: Text(
                     'Titre du Ticket :',
-                    style: Theme.of(context).textTheme.headline6?.copyWith(
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: Colors.teal[800],
+                          color: const Color.fromARGB(255, 0, 0, 0),
                         ) ??
                         TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.teal[800]),
                   ),
@@ -69,9 +69,9 @@ class ViewReponsesPage extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 16.0),
                   child: Text(
                     ticketTitle,
-                    style: Theme.of(context).textTheme.headline5?.copyWith(
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w600,
-                          color: Colors.teal[600],
+                          color: const Color.fromARGB(255, 17, 17, 17),
                         ) ??
                         TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.teal[600]),
                   ),

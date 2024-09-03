@@ -22,52 +22,59 @@ class _TicketPageState extends State<TicketPage> {
   // Liste des catégories (exemples)
   final List<String> _categories = ['Technique', 'Pédagogique', 'Autre'];
   String? _selectedCategory;
-   String? uid;
-   String? displayName;
-
-  // get uid => FirebaseAuth.instance.currentUser!.uid;
-  get user_name  => FirebaseAuth.instance.currentUser!.displayName;
-
-
+  String? uid;
+  String? displayName;
+  String? role;
 
   @override
   void initState() {
     super.initState();
     _selectedCategory =
         _categories.first; // Sélectionner la première catégorie par défaut
-        getCurrentUser();
+    _getCurrentUser();
   }
 
-  Future<void> getCurrentUser() async {
-  User? user = FirebaseAuth.instance.currentUser;
+  Future<void> _getCurrentUser() async {
+    User? user = FirebaseAuth.instance.currentUser;
 
-  if (user != null) {
-    setState(() {
-      uid = user.uid;
-      displayName = user.displayName;  // Récupère le nom d'affichage de l'utilisateur
-    });
-  } else {
-    print("Aucun utilisateur n'est connecté");
+    if (user != null) {
+      setState(() {
+        uid = user.uid;
+        displayName = user.displayName;
+      });
+
+      DocumentSnapshot userDoc =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+
+      if (userDoc.exists) {
+        setState(() {
+          role = userDoc
+              .get('role'); // Assure-toi que 'role' est bien le nom du champ
+        });
+      } else {
+        print(
+            "Les informations sur le rôle de l'utilisateur sont introuvables");
+      }
+    } else {
+      print("Aucun utilisateur n'est connecté");
+    }
   }
-}
-
 
   // Fonction pour supprimer un ticket
   void _deleteTicket(String ticketId) {
     FirebaseFirestore.instance.collection('Tickets').doc(ticketId).delete();
   }
 
-void _editTicket(String ticketId, Map<String, dynamic> ticketData) {
-  Navigator.of(context).push(
-    MaterialPageRoute(
-      builder: (context) => EditTicketPage(
-        ticketId: ticketId,
-        ticketData: ticketData,
+  void _editTicket(String ticketId, Map<String, dynamic> ticketData) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => EditTicketPage(
+          ticketId: ticketId,
+          ticketData: ticketData,
+        ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 
   // Fonction pour ajouter un nouveau ticket
   void _addTicket() {
@@ -126,8 +133,8 @@ void _editTicket(String ticketId, Map<String, dynamic> ticketData) {
                     'status': 'Attente', // Statut par défaut
                     'categorie': _selectedCategory,
                     'date_creation': Timestamp.now(),
-                    // 'user_id': uid, // Remplacez par l'ID de l'utilisateur actuel
-                     'user_name': displayName,
+                    'user_id': uid, // Utiliser l'ID de l'utilisateur actuel
+                    'user_name': displayName,
                   });
                   Navigator.of(context).pop();
                 }
@@ -143,11 +150,8 @@ void _editTicket(String ticketId, Map<String, dynamic> ticketData) {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-    
-       appBar: CustomAppBar(title: 'Liste des Tickets'),
+      appBar: CustomAppBar(title: 'Liste des Tickets'),
       drawer: CustomDrawer(),
-
-
       body: Column(
         children: [
           Padding(
@@ -155,19 +159,17 @@ void _editTicket(String ticketId, Map<String, dynamic> ticketData) {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  decoration: BoxDecoration(
-                    color: const Color.fromARGB(
-                        255, 240, 114, 41), // Couleur de fond du bouton
-                    borderRadius:
-                        BorderRadius.circular(8), // Bordure légèrement arrondie
+                if (role == 'APPRENANT')
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 240, 114, 41),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.add, color: Colors.white),
+                      onPressed: _addTicket,
+                    ),
                   ),
-                  child: IconButton(
-                    icon: const Icon(Icons.add,
-                        color: Colors.white), // Icône blanche
-                    onPressed: _addTicket,
-                  ),
-                ),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 10.0),
@@ -184,9 +186,7 @@ void _editTicket(String ticketId, Map<String, dynamic> ticketData) {
                         fillColor: Colors.white,
                       ),
                       onChanged: (value) {
-                        setState(() {
-                          // Vous pouvez filtrer les résultats ici en fonction de la recherche
-                        });
+                        // Vous pouvez ajouter une logique pour filtrer les résultats ici
                       },
                     ),
                   ),
@@ -196,7 +196,12 @@ void _editTicket(String ticketId, Map<String, dynamic> ticketData) {
           ),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              stream: _ticketsStream,
+              stream: role == 'FORMATEUR'
+                  ? FirebaseFirestore.instance.collection("Tickets").snapshots()
+                  : FirebaseFirestore.instance
+                      .collection("Tickets")
+                      .where('user_id', isEqualTo: uid)
+                      .snapshots(),
               builder: (BuildContext context,
                   AsyncSnapshot<QuerySnapshot> snapshot) {
                 if (snapshot.hasError) {
@@ -249,7 +254,8 @@ void _editTicket(String ticketId, Map<String, dynamic> ticketData) {
                           Text('Status: ${data['status']}'),
                           Text('Catégorie: ${data['categorie']}'),
                           Text(
-                              'Date de création: ${(data['date_creation'] as Timestamp).toDate()}'),
+                            'Date de création: ${(data['date_creation'] as Timestamp).toDate()}',
+                          ),
                           const SizedBox(height: 10),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
@@ -258,7 +264,6 @@ void _editTicket(String ticketId, Map<String, dynamic> ticketData) {
                                 icon: const Icon(Icons.visibility,
                                     color: Colors.blue),
                                 onPressed: () {
-                                  // Affichez une boîte de dialogue ou une nouvelle page avec tous les détails
                                   showDialog(
                                     context: context,
                                     builder: (BuildContext context) {
@@ -278,7 +283,7 @@ void _editTicket(String ticketId, Map<String, dynamic> ticketData) {
                                             Text(
                                                 'Date de création: ${(data['date_creation'] as Timestamp).toDate()}'),
                                             Text(
-                                                'Créé par: ${data['user_name']}'), // Ajoutez l'ID de l'utilisateur ou un autre champ si disponible
+                                                'Créé par: ${data['user_name']}'),
                                           ],
                                         ),
                                         actions: [
@@ -294,41 +299,44 @@ void _editTicket(String ticketId, Map<String, dynamic> ticketData) {
                                   );
                                 },
                               ),
-
-
-                               IconButton(
-                              icon: const Icon(Icons.comment, color: Colors.blue),
-                              onPressed: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => ViewReponsesPage(ticketId: ticketId),
-                                  ),
-                                );
-                              },
-                            ),
-
-                                    IconButton(
-                                      icon: const Icon(Icons.reply, color: Colors.blue),
-                                      onPressed: () {
-                                        Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                            builder: (context) => ReponsePage(ticketId: ticketId),
-                                          ),
-                                        );
-                                      },
+                              
+                              IconButton(
+                                icon: const Icon(Icons.comment,
+                                    color: Colors.blue),
+                                onPressed: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          ViewReponsesPage(ticketId: ticketId),
                                     ),
-
+                                  );
+                                },
+                              ),
+                              if (role != 'APPRENANT')
                               IconButton(
                                 icon:
-                                    const Icon(Icons.edit, color: Colors.blue),
-                                onPressed: () => _editTicket(ticketId, data) // Appel à la fonction de modification
+                                    const Icon(Icons.reply, color: Colors.blue),
+                                onPressed: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          ReponsePage(ticketId: ticketId),
+                                    ),
+                                  );
+                                },
                               ),
-                              IconButton(
-                                icon:
-                                    const Icon(Icons.delete, color: Colors.red),
-                                onPressed: () => _deleteTicket(
-                                    ticketId), // Appel à la fonction de suppression
-                              ),
+                              if (role == 'APPRENANT') ...[
+                                IconButton(
+                                  icon: const Icon(Icons.edit,
+                                      color: Colors.blue),
+                                  onPressed: () => _editTicket(ticketId, data),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete,
+                                      color: Colors.red),
+                                  onPressed: () => _deleteTicket(ticketId),
+                                ),
+                              ],
                             ],
                           ),
                         ],
