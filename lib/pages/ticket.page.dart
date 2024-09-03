@@ -3,7 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:tutor_aid/pages/AppBar.dart';
 import 'package:tutor_aid/pages/EditTicket.page.dart';
+import 'package:tutor_aid/pages/Reponse.page.dart';
 import 'package:tutor_aid/pages/Sidebar.dart';
+import 'package:tutor_aid/pages/ViewReponses.page.dart';
 
 class TicketPage extends StatefulWidget {
   const TicketPage({Key? key}) : super(key: key);
@@ -292,6 +294,30 @@ void _editTicket(String ticketId, Map<String, dynamic> ticketData) {
                                   );
                                 },
                               ),
+
+
+                               IconButton(
+                              icon: const Icon(Icons.comment, color: Colors.blue),
+                              onPressed: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => ViewReponsesPage(ticketId: ticketId),
+                                  ),
+                                );
+                              },
+                            ),
+
+                                    IconButton(
+                                      icon: const Icon(Icons.reply, color: Colors.blue),
+                                      onPressed: () {
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (context) => ReponsePage(ticketId: ticketId),
+                                          ),
+                                        );
+                                      },
+                                    ),
+
                               IconButton(
                                 icon:
                                     const Icon(Icons.edit, color: Colors.blue),

@@ -103,4 +103,8 @@ class DetailTicketService {
       print('Erreur lors de la suppression du détail de ticket: $e');
     }
   }
+
+
+
+
 }
