@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:tutor_aid/pages/AppBar.dart';
+import 'package:tutor_aid/pages/Sidebar.dart';
 import 'package:tutor_aid/pages/UserEdit.page.dart';
 
 class UserPage extends StatefulWidget {
@@ -40,9 +42,10 @@ class _UserPageState extends State<UserPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Liste des Utilisateurs"),
-      ),
+     
+      appBar: CustomAppBar(title: 'Liste des Utilisateurs'),
+      drawer: CustomDrawer(),
+
       body: Column(
         children: [
           Padding(

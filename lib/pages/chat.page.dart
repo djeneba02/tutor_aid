@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:tutor_aid/pages/AppBar.dart';
 import 'package:tutor_aid/pages/Sidebar.dart';
 
-class CoursPage extends StatelessWidget {
-  const CoursPage({Key? key}) : super(key: key);
+class ChatPage extends StatelessWidget {
+  const ChatPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -11,9 +11,8 @@ class CoursPage extends StatelessWidget {
     Color peachPuff = const Color(0xFFFFEDE0);
 
     return Scaffold(
-      appBar: CustomAppBar(title: 'Cours'),
+      appBar: CustomAppBar(title: 'Espace de Discutions'),
       drawer: CustomDrawer(),
-    
     );
   }
 }

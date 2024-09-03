@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tutor_aid/pages/dashbord.page.dart';
-import 'package:tutor_aid/pages/historique.page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -14,11 +13,10 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-  bool _obscurePassword = true; // État pour la visibilité du mot de passe
+  bool _obscurePassword = true;
 
   @override
   Widget build(BuildContext context) {
-    // Définir la couleur peachPuff ici
     Color peachPuff = const Color(0xFFFFEDE0);
 
     return Scaffold(
@@ -71,11 +69,11 @@ class _LoginPageState extends State<LoginPage> {
             ElevatedButton(
               onPressed: () {
                 if (emailController.text.isNotEmpty &&
-                    passwordController.text.length > 9) {
+                    passwordController.text.isNotEmpty) {
                   login();
                 } else {
                   Fluttertoast.showToast(
-                    msg: "Veuillez entrer un email valide et un mot de passe d'au moins 10 caractères.",
+                    msg: "Veuillez entrer un email et un mot de passe.",
                     toastLength: Toast.LENGTH_SHORT,
                     gravity: ToastGravity.BOTTOM,
                     backgroundColor: Colors.red,
@@ -99,8 +97,8 @@ class _LoginPageState extends State<LoginPage> {
     final auth = FirebaseAuth.instance;
     try {
       final userCredential = await auth.signInWithEmailAndPassword(
-        email: emailController.text,
-        password: passwordController.text,
+        email: emailController.text.trim(), // Enlever les espaces superflus
+        password: passwordController.text.trim(),
       );
       Fluttertoast.showToast(
         msg: "Connexion réussie !",
@@ -114,7 +112,7 @@ class _LoginPageState extends State<LoginPage> {
       Future.delayed(const Duration(seconds: 1), () {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => DashbordPage()),
+          MaterialPageRoute(builder: (context) => const DashbordPage()),
         );
       });
     } on FirebaseAuthException catch (e) {
@@ -128,6 +126,9 @@ class _LoginPageState extends State<LoginPage> {
           break;
         case 'invalid-email':
           errorMessage = "Votre email n'a pas un format valide.";
+          break;
+        case 'network-request-failed':
+          errorMessage = "Erreur de connexion réseau. Vérifiez votre connexion.";
           break;
         default:
           errorMessage = "Impossible de se connecter. Veuillez vérifier vos informations et réessayer.";

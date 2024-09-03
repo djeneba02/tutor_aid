@@ -6,14 +6,21 @@ class CustomDrawer extends StatelessWidget {
   // Définir une couleur personnalisée pour "peach"
   static const Color peachColor = Color(0xFFFFDAB9); // Code hexadécimal pour la couleur "peach"
 
-  Future<String> _getUserRole() async {
+ Future<String> _getUserRole() async {
+  try {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       DocumentSnapshot doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
-      return doc.get('role') ?? 'unknown';
+      if (doc.exists && doc.data() != null) {
+        return doc.get('role') ?? 'unknown';
+      }
     }
     return 'unknown';
+  } catch (e) {
+    print('Erreur lors de la récupération du rôle: $e');
+    return 'unknown';
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -67,15 +74,9 @@ class CustomDrawer extends StatelessWidget {
                   child: ListView(
                     padding: EdgeInsets.zero,
                     children: [
-                      if (userRole == 'ADMIN' || userRole == 'FORMATEUR')
-                        ListTile(
-                          onTap: () {
-                            Navigator.of(context).pushReplacementNamed('/Formateur');
-                          },
-                          leading: const Icon(Icons.person, color: Colors.black),
-                          title: const Text("Formateur"),
-                        ),
-                      if (userRole == 'ADMIN' || userRole == 'APPRENANT')
+                      
+                     
+                      if (userRole == 'FORMATEUR' || userRole == 'APPRENANT')
                         ListTile(
                           onTap: () {
                             Navigator.of(context).pushReplacementNamed('/Ticket');
@@ -83,27 +84,38 @@ class CustomDrawer extends StatelessWidget {
                           leading: const Icon(Icons.airplane_ticket, color: Colors.black),
                           title: const Text("Ticket"),
                         ),
-                      if (userRole == 'ADMIN')
-                        ListTile(
+
+                         ListTile(
                           onTap: () {
-                            Navigator.of(context).pushReplacementNamed('/UserManagement');
+                            Navigator.of(context).pushReplacementNamed('/BaseDeConnaissance');
                           },
-                          leading: const Icon(Icons.group, color: Colors.black),
-                          title: const Text("Utilisateurs"),
+                          leading: const Icon(Icons.book_sharp, color: Colors.black),
+                          title: const Text("BaseDeConnaissance"),
                         ),
+
+                      if (userRole == 'ADMIN')
                       ListTile(
                         onTap: () {
                           Navigator.of(context).pushReplacementNamed('/User');
                         },
                         leading: const Icon(Icons.person, color: Colors.black),
-                        title: const Text("Profil Utilisateur"),
+                        title: const Text("Utilisateur"),
                       ),
+
+                    ListTile(
+                        onTap: () {
+                          Navigator.of(context).pushReplacementNamed('/Chat');
+                        },
+                        leading: const Icon(Icons.chat, color: Colors.black),
+                        title: const Text("chat"),
+                      ),
+
                       ListTile(
                         onTap: () {
-                          Navigator.of(context).pushReplacementNamed('/Cours');
+                          Navigator.of(context).pushReplacementNamed('/Notification');
                         },
-                        leading: const Icon(Icons.book, color: Colors.black),
-                        title: const Text("Cours"),
+                        leading: const Icon(Icons.notification_add, color: Colors.black),
+                        title: const Text("Notification"),
                       ),
                       ListTile(
                         onTap: () {
@@ -119,6 +131,7 @@ class CustomDrawer extends StatelessWidget {
                         leading: const Icon(Icons.account_circle, color: Colors.black),
                         title: const Text("Profil"),
                       ),
+                       if (userRole == 'ADMIN')
                       ListTile(
                         onTap: () {
                           Navigator.of(context).pushReplacementNamed('/Rapport');
@@ -126,13 +139,7 @@ class CustomDrawer extends StatelessWidget {
                         leading: const Icon(Icons.insert_chart, color: Colors.black),
                         title: const Text("Rapport"),
                       ),
-                      ListTile(
-                        onTap: () {
-                          Navigator.of(context).pushReplacementNamed('/Parametre');
-                        },
-                        leading: const Icon(Icons.settings, color: Colors.black),
-                        title: const Text("Paramètres"),
-                      ),
+                      
                       SizedBox(height: 16.0),
                       ListTile(
                         onTap: () async {

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:tutor_aid/pages/AppBar.dart';
 import 'package:tutor_aid/pages/Sidebar.dart';
 
-class FormateurPage extends StatelessWidget {
-  const FormateurPage({Key? key}) : super(key: key);
+class BaseDeConnaissancePage extends StatelessWidget {
+  const BaseDeConnaissancePage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
