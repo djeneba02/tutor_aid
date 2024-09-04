@@ -45,4 +45,13 @@ class ReponseService {
       });
   }
   
+// Marquer le ticket comme lu
+Future<void> markTicketAsRead(String ticketId) async {
+  try {
+    await _db.collection('Tickets').doc(ticketId).update({'isRead': true});
+  } catch (e) {
+    print("Erreur lors de la mise à jour du ticket : $e");
+  }
+}
+
 }

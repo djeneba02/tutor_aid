@@ -120,8 +120,15 @@ class DetailTicketService {
     } catch (e) {
       print('Erreur lors de la suppression du détail de ticket: $e');
     }
+
+ // Méthode pour marquer le ticket comme lu
+  Future<void> markTicketAsRead(String ticketId) async {
+    await FirebaseFirestore.instance.collection('Tickets').doc(ticketId).update({
+      'isRead': true, // Assurez-vous que le champ 'isRead' existe dans votre collection 'Tickets'
+    });
   }
 
+  }
 
 
 

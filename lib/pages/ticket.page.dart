@@ -76,6 +76,15 @@ class _TicketPageState extends State<TicketPage> {
     );
   }
 
+   // Fonction pour assigner un ticket à un formateur
+  void _assignTicket(String ticketId) {
+    FirebaseFirestore.instance.collection('Tickets').doc(ticketId).update({
+      'status': 'En cours',
+      'assigned_to': uid, // Assigne le ticket à l'ID du formateur
+      'assigned_by_name': displayName,
+    });
+  }
+
   // Fonction pour ajouter un nouveau ticket
   void _addTicket() {
     showDialog(
@@ -299,6 +308,33 @@ class _TicketPageState extends State<TicketPage> {
                                   );
                                 },
                               ),
+
+                                  if (role == 'FORMATEUR' &&
+                                  data['status'] == 'Attente') ...[
+                                IconButton(
+                                  icon: const Icon(Icons.assignment_ind,
+                                      color: Colors.green),
+                                  onPressed: () {
+                                    _assignTicket(ticketId);
+                                  },
+                                ),
+                              ],
+                              if (role == 'FORMATEUR' &&
+                                  data['status'] == 'En cours' &&
+                                  data['assigned_to'] == uid) ...[
+                                IconButton(
+                                  icon: const Icon(Icons.reply,
+                                      color: Colors.orange),
+                                  onPressed: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            ReponsePage(ticketId: ticketId),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
                               
                               IconButton(
                                 icon: const Icon(Icons.comment,
@@ -312,19 +348,19 @@ class _TicketPageState extends State<TicketPage> {
                                   );
                                 },
                               ),
-                              if (role != 'APPRENANT')
-                              IconButton(
-                                icon:
-                                    const Icon(Icons.reply, color: Colors.blue),
-                                onPressed: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          ReponsePage(ticketId: ticketId),
-                                    ),
-                                  );
-                                },
-                              ),
+                              // if (role != 'APPRENANT')
+                              // IconButton(
+                              //   icon:
+                              //       const Icon(Icons.reply, color: Colors.blue),
+                              //   onPressed: () {
+                              //     Navigator.of(context).push(
+                              //       MaterialPageRoute(
+                              //         builder: (context) =>
+                              //             ReponsePage(ticketId: ticketId),
+                              //       ),
+                              //     );
+                              //   },
+                              // ),
                               if (role == 'APPRENANT') ...[
                                 IconButton(
                                   icon: const Icon(Icons.edit,

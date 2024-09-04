@@ -11,8 +11,11 @@ class HistoriquePage extends StatelessWidget {
     Color peachPuff = const Color(0xFFFFEDE0);
 
     return Scaffold(
-       appBar: CustomAppBar(title: 'Historique'),
+    
+      appBar: CustomAppBar(title: 'Historique'),
       drawer: CustomDrawer(),
+    
+
     );
   }
 }
