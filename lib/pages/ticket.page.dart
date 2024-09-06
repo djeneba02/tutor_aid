@@ -269,6 +269,7 @@ class _TicketPageState extends State<TicketPage> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
+                              //  if (role == 'FORMATEUR')
                               IconButton(
                                 icon: const Icon(Icons.visibility,
                                     color: Colors.blue),

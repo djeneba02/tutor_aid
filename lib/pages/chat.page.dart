@@ -24,180 +24,141 @@ class _ChatPageState extends State<ChatPage> {
         'createdAt': Timestamp.now(),
         'userId': user.uid,
         'userName': user.displayName ?? 'Unknown',
-        'userRole': 'User', // Modifie ceci selon le rôle réel de l'utilisateur
+        'userRole': 'User',
       });
       _messageController.clear();
     }
   }
 
-  Future<void> _editMessage(String messageId, String currentText) async {
-    final String? newText = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Edit Message'),
-        content: TextField(
-          controller: TextEditingController(text: currentText),
-          decoration: InputDecoration(labelText: 'New message'),
-          onChanged: (value) {
-            // Pas besoin d'affecter à une variable ici
-          },
-        ),
-        actions: <Widget>[
-          TextButton(
-            child: Text('Cancel'),
-            onPressed: () => Navigator.of(ctx).pop<String>(null),
-          ),
-          TextButton(
-            child: Text('Save'),
-            onPressed: () => Navigator.of(ctx).pop<String>(currentText),
-          ),
-        ],
-      ),
-    );
-
-    if (newText != null && newText.isNotEmpty) {
-      await _firestore.collection('chats').doc(messageId).update({'text': newText});
-    }
-  }
-
+  // Fonction pour supprimer un message
   void _deleteMessage(String messageId) async {
     await _firestore.collection('chats').doc(messageId).delete();
   }
 
+  // Fonction pour modifier un message
+  void _editMessage(String messageId, String newText) async {
+    await _firestore.collection('chats').doc(messageId).update({
+      'text': newText,
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    Color peachPuff = const Color(0xFFFFEDE0);
-    Color messageBackgroundColor = Colors.white;
-    Color userMessageBackgroundColor = Colors.blueAccent.withOpacity(0.2);
-    Color messageTextColor = Colors.black;
-    Color userMessageTextColor = Colors.white;
-
     return Scaffold(
-      appBar: CustomAppBar(title: 'Espace de Discutions'),
+      appBar: CustomAppBar(title: 'Espace de Discussion'),
       drawer: CustomDrawer(),
-      body: Column(
-        children: <Widget>[
-          Expanded(
-            child: StreamBuilder(
-              stream: _firestore.collection('chats').orderBy('createdAt', descending: true).snapshots(),
-              builder: (ctx, AsyncSnapshot<QuerySnapshot> chatSnapshot) {
-                if (chatSnapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                }
-                final chatDocs = chatSnapshot.data?.docs;
-                if (chatDocs == null || chatDocs.isEmpty) {
-                  return Center(
-                    child: Container(
-                      color: Colors.white,
-                      padding: const EdgeInsets.all(20.0),
+      resizeToAvoidBottomInset: true,  // Permet de maintenir l'UI visible avec le clavier
+      body: SafeArea(
+        child: Column(
+          children: <Widget>[
+            // Section de la liste de messages
+            Expanded(
+              child: StreamBuilder(
+                stream: _firestore
+                    .collection('chats')
+                    .orderBy('createdAt', descending: true)
+                    .snapshots(),
+                builder: (ctx, AsyncSnapshot<QuerySnapshot> chatSnapshot) {
+                  if (chatSnapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  }
+                  if (chatSnapshot.hasError) {
+                    return Center(
                       child: Text(
-                        'Aucun message encore.',
-                        style: TextStyle(color: Colors.grey, fontSize: 18.0),
-                      ),
-                    ),
-                  );
-                }
-                return ListView.builder(
-                  reverse: true,
-                  itemCount: chatDocs.length,
-                  itemBuilder: (ctx, index) {
-                    final chatDoc = chatDocs[index];
-                    final messageId = chatDoc.id;
-                    final userId = chatDoc['userId'];
-                    final currentUser = _auth.currentUser;
-
-                    bool isUserMessage = userId == currentUser?.uid;
-
-                    return Container(
-                      margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
-                      alignment: isUserMessage ? Alignment.centerRight : Alignment.centerLeft,
-                      child: Column(
-                        crossAxisAlignment: isUserMessage
-                            ? CrossAxisAlignment.end
-                            : CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Container(
-                            constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
-                            padding: const EdgeInsets.all(10.0),
-                            decoration: BoxDecoration(
-                              color: isUserMessage ? userMessageBackgroundColor : messageBackgroundColor,
-                              borderRadius: BorderRadius.circular(12.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black26,
-                                  blurRadius: 4.0,
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: <Widget>[
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: <Widget>[
-                                      Text(
-                                        chatDoc['userName'],
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: isUserMessage ? userMessageTextColor : messageTextColor,
-                                        ),
-                                      ),
-                                      SizedBox(height: 4.0),
-                                      Text(
-                                        chatDoc['text'],
-                                        style: TextStyle(color: isUserMessage ? userMessageTextColor : messageTextColor),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                if (isUserMessage)
-                                  Row(
-                                    children: <Widget>[
-                                      IconButton(
-                                        icon: Icon(Icons.edit, color: Colors.blue),
-                                        onPressed: () => _editMessage(messageId, chatDoc['text']),
-                                      ),
-                                      IconButton(
-                                        icon: Icon(Icons.delete, color: Colors.red),
-                                        onPressed: () => _deleteMessage(messageId),
-                                      ),
-                                    ],
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ],
+                        'Erreur : ${chatSnapshot.error}',
+                        style: TextStyle(color: Colors.red),
                       ),
                     );
-                  },
-                );
-              },
+                  }
+
+                  final chatDocs = chatSnapshot.data?.docs ?? [];
+
+                  // Gestion du cas où il n'y a pas de messages
+                  if (chatDocs.isEmpty) {
+                    return const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(20.0),
+                        child: Text(
+                          'Aucun message pour l\'instant. Soyez le premier à en envoyer !',
+                          style: TextStyle(color: Colors.grey, fontSize: 18.0),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    );
+                  }
+
+                  // Liste des messages
+                  return ListView.builder(
+                    reverse: true,
+                    physics: BouncingScrollPhysics(),  // Ajout de l'effet de rebond
+                    itemCount: chatDocs.length,
+                    itemBuilder: (ctx, index) {
+                      final chatDoc = chatDocs[index];
+                      final userId = chatDoc['userId'];
+                      final currentUser = _auth.currentUser;
+                      final isUserMessage = userId == currentUser?.uid;
+
+                      return Container(
+                        margin: const EdgeInsets.symmetric(
+                          vertical: 5.0,
+                          horizontal: 10.0,
+                        ),
+                        alignment: isUserMessage
+                            ? Alignment.centerRight
+                            : Alignment.centerLeft,
+                        child: Container(
+                          padding: const EdgeInsets.all(10.0),
+                          decoration: BoxDecoration(
+                            color: isUserMessage
+                                ? Colors.blueAccent.withOpacity(0.8)
+                                : Colors.grey[300],
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          child: Text(
+                            chatDoc['text'] ?? '',
+                            style: TextStyle(
+                              color: isUserMessage ? Colors.white : Colors.black,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: <Widget>[
-                Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    decoration: InputDecoration(
-                      labelText: 'Envoyer un message...',
-                      border: OutlineInputBorder(),
-                      filled: true,
-                      fillColor: peachPuff,
-                    ),
+
+            // Champ d'envoi de message
+            Container(
+              padding: const EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                border: Border(
+                  top: BorderSide(
+                    color: Colors.grey.shade300,
                   ),
                 ),
-                IconButton(
-                  icon: Icon(Icons.send),
-                  onPressed: _sendMessage,
-                ),
-              ],
+              ),
+              child: Row(
+                children: <Widget>[
+                  Expanded(
+                    child: TextField(
+                      controller: _messageController,
+                      decoration: InputDecoration(
+                        hintText: 'Écrivez un message...',
+                        border: InputBorder.none,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.send),
+                    onPressed: _sendMessage,
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

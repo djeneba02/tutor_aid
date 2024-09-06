@@ -69,7 +69,19 @@ class TicketService {
       print('Erreur lors de la suppression du ticket: $e');
     }
   }
+
+
+ // Méthode pour récupérer les tickets avec le statut 'Résolu'
+  Stream<QuerySnapshot> getResolvedTickets() {
+    return _db
+        .collection("Tickets")
+        .where('status', isEqualTo: 'Répondu')
+        .snapshots();
+  }
+
 }
+
+
 
 class DetailTicketService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -121,15 +133,6 @@ class DetailTicketService {
       print('Erreur lors de la suppression du détail de ticket: $e');
     }
 
- // Méthode pour marquer le ticket comme lu
-  Future<void> markTicketAsRead(String ticketId) async {
-    await FirebaseFirestore.instance.collection('Tickets').doc(ticketId).update({
-      'isRead': true, // Assurez-vous que le champ 'isRead' existe dans votre collection 'Tickets'
-    });
-  }
 
-  }
-
-
-
+}
 }

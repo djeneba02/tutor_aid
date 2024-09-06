@@ -87,4 +87,18 @@ class UserService {
       return [];
     }
   }
+
+  Future<Map<String, dynamic>> getUserProfile(String userId) async {
+    try {
+      final doc = await _firestore.collection('users').doc(userId).get();
+      if (doc.exists) {
+        return doc.data() ?? {};
+      } else {
+        throw Exception('User not found');
+      }
+    } catch (e) {
+      throw Exception('Failed to load user profile: $e');
+    }
+  }
+
 }

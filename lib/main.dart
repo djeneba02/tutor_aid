@@ -20,6 +20,7 @@ const dWhite = Colors.white;
 const dBlack = Colors.black;
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -32,6 +33,7 @@ class TutorAid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner:false,
       // Utilisation de routes
       routes: {
         '/': (context) => const AccueilPage(),
